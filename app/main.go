@@ -2,10 +2,10 @@ package main
 
 import (
 	"fmt"
-	"log"
+	//"log"
 	"net/http"
 	"html/template"
-
+	"github.com/go-martini/martini"
 	"./models"
 )
 
@@ -31,22 +31,6 @@ func writeHandler(w http.ResponseWriter, r *http.Request) {
 	t.ExecuteTemplate(w, "write", nil)
 }
 
-func editHandler(w http.ResponseWriter, r *http.Request) {
-	t, err := template.ParseFiles("templates/write.html", "templates/header.html", "templates/footer.html")
-	if err != nil {
-		fmt.Fprintf(w, err.Error())
-
-	}
-
-	id := r.FormValue("id")
-	post, found := posts[id]
-	if !found {
-		http.NotFound(w, r)
-	}
-
-	t.ExecuteTemplate(w, "write", post)
-}
-
 func savePostHandler(w http.ResponseWriter, r *http.Request) {
 	id := r.FormValue("id")
 	title := r.FormValue("title")
@@ -66,6 +50,23 @@ func savePostHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/", 302)
 }
 
+func editHandler(w http.ResponseWriter, r *http.Request) {
+	t, err := template.ParseFiles("templates/write.html", "templates/header.html", "templates/footer.html")
+	if err != nil {
+		fmt.Fprintf(w, err.Error())
+
+	}
+
+	id := r.FormValue("id")
+	post, found := posts[id]
+	if !found {
+		http.NotFound(w, r)
+	}
+
+	t.ExecuteTemplate(w, "write", post)
+}
+
+
 func deleteHandler(w http.ResponseWriter, r *http.Request) {
 	id := r.FormValue("id")
 	if id == "" {
@@ -80,12 +81,19 @@ func deleteHandler(w http.ResponseWriter, r *http.Request) {
 func main() {
 	posts = make(map[string]*models.Post, 0)
 
-	http.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("./assets/"))))
-	http.HandleFunc("/", indexHandler)
-	http.HandleFunc("/write", writeHandler)
-	http.HandleFunc("/SavePost", savePostHandler)
-	http.HandleFunc("/edit", editHandler)
-	http.HandleFunc("/delete", deleteHandler)
+	m := martini.Classic()
 
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	staticOptions := martini.StaticOptions{Prefix: "assets"}
+	m.Use(martini.Static("assets", staticOptions))
+	m.Get("/", indexHandler)
+	m.Get("/write", writeHandler)
+	m.Get("/edit", editHandler)
+	m.Get("/delete", deleteHandler)
+	m.Post("/SavePost", savePostHandler)
+
+	m.Get("/test", func() string {
+		return "test"
+	})
+
+	m.Run()
 }
