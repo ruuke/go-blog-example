@@ -1,0 +1,8 @@
+version: "3.7"
+services:
+  app:
+    build: .
+    volumes:
+      - './app:/go/app'
+    ports:
+      - '8080:8080'
