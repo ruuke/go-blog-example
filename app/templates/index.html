@@ -1,9 +1,9 @@
-{{ range $key, $value := . }}
+{{ range $value := . }}
 <div class="row">
 	<div class="col-xs-2">
 	</div>
 	<div class="col-xs-8">
-		<h1><a href="/edit/{{$key}}">{{ $value.Title }}</a></h1>
+		<h1><a href="/edit/{{$value.Id}}">{{ $value.Title }}</a></h1>
 	</div>
 	<div class="col-xs-2">
 	</div>
